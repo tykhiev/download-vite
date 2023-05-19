@@ -41,9 +41,48 @@ function App() {
     }
   };
 
+  const handleFormSubmitMp3 = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/download/mp3`, // <-- change the URL to the new API endpoint
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: url,
+            title: title,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const fileBlob = await response.blob();
+      const downloadUrl = URL.createObjectURL(fileBlob);
+
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `${title}.mp3`; // <-- change the file extension to mp3
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold text-gray-900">Download Video</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Download Audio</h1>
       <form className="mt-8" onSubmit={handleFormSubmit}>
         <div className="flex flex-col mb-4">
           <label htmlFor="url" className="mb-2 font-bold text-gray-900">
@@ -71,9 +110,18 @@ function App() {
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
           />
         </div>
-        <button type="submit" className="btn btn-outline btn-success">
-          Download
-        </button>
+        <div className="flex">
+          <button type="submit" className="btn btn-outline btn-success mr-2">
+            Download MP4
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline btn-success"
+            onClick={handleFormSubmitMp3}
+          >
+            Download MP3
+          </button>
+        </div>
       </form>
       {isLoading && (
         <p className="text-blue-500 mt-2">
